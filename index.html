@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="description" content="eBay Item search using Bootstrap, jQuery, and Facebook Mashup (HW8)">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>HW8: eBay Item search</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.13.1/jquery.validate.min.js"></script>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+        <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+
+		<style>
+			html{
+				background-color: white;
+			}
+			body{
+				max-width: 1000px;
+				padding-left: 1em;
+				padding-right: 1em;
+				margin: 0 auto;
+				color: black;
+			}
+			h1{
+				width: 230px;
+				line-height: 50px;
+				background-image: url(ebay.jpg);
+				background-size: 101px 50px;
+				background-repeat: no-repeat;
+				text-align: right;
+				font-size: 2em;
+			}
+			#maxHandlingTimeRow{
+				padding-top: 10px;
+			}
+			.checkbox-inline{
+				margin-right: 10px;
+			}
+			.checkbox-inline+.checkbox-inline{
+				margin-left: 0px;
+			}
+			.errorMsg{
+				color: rgb(169, 68, 66);
+			}
+			#results{
+				padding-top: 15px;
+			}
+			#pagination{ 
+				padding-top: 10px;			
+			}
+		</style>
+    </head>
+    <body>
+    	<script>
+  			window.fbAsyncInit = function() {
+    			FB.init({
+     			 appId      : '1131390580211839',
+    			  xfbml      : true,
+   			   version    : 'v2.3'
+   			 });
+  			};
+
+  			(function(d, s, id){
+     			var js, fjs = d.getElementsByTagName(s)[0];
+     			if (d.getElementById(id)) {return;}
+     			js = d.createElement(s); js.id = id;
+     			js.src = "//connect.facebook.net/en_US/sdk.js";
+     			fjs.parentNode.insertBefore(js, fjs);
+   			}(document, 'script', 'facebook-jssdk'));
+		</script>
+    	<header>
+            <h1>Shopping</h1>
+    	</header>
+    	<form id="myform" class="form-horizontal" method="get" action="" data-toggle="validator">
+    		<div class="form-group">
+    			<label for="keywords" class="col-sm-2 control-label">Key Words: <font color="#A94442">*</font></label>
+    			<div class="col-sm-10 needcheck">
+    				<input id="keywords" class="form-control" name="keywords" placeholder="Enter keyword" value=""/>
+    			</div>
+    		</div>
+    		<div class="form-group">
+    			<label for="price" class="col-sm-2 control-label">Price Range:</label>
+    			<div class="col-sm-5 needcheck">
+    				<input class="form-control" id="pricefrom" name="pricefrom" placeholder="from ($)" value=""/> 
+    			</div>
+    			<div class="col-sm-5 needcheck">
+    				<input class="form-control" id="priceto" name="priceto" placeholder="to ($)" value=""/>
+    			</div>
+    		</div>
+    		<div class="form-group">
+    			<label for="condition" class="col-sm-2 control-label">Condition:</label>
+    			<div class="col-sm-10">
+    			<label class="checkbox-inline">
+    				<input id="new" type="checkbox" class="checkbox" name="condition[]" value="1000" />New
+    			</label>
+    			<label class="checkbox-inline">
+    				<input id="used" type="checkbox" class="checkbox" name="condition[]" value="3000" />Used
+    			</label>
+    			<label class="checkbox-inline">
+    				<input id="verygood" type="checkbox" class="checkbox" name="condition[]" value="4000" />Very Good
+    			</label>
+    			<label class="checkbox-inline">
+    				<input id="good" type="checkbox" class="checkbox" name="condition[]" value="5000" />Good
+    			</label>
+    			<label class="checkbox-inline">
+    				<input id="acceptable" type="checkbox" class="checkbox" name="condition[]" value="6000" />Acceptable
+    			</label>
+    			</div>
+    		</div>
+    		<div class="form-group">
+    			<label for="buyformats" class="col-sm-2 control-label">Buying formats:</label>
+    			<div class="col-sm-10">
+    			<label class="checkbox-inline">
+    				<input id="fixedprice" type="checkbox" class="checkbox" name="buyformates[]" value="FixedPrice" />Buy It Now 
+    			</label>
+    			<label class="checkbox-inline">
+    				<input id="auction" type="checkbox" class="checkbox" name="buyformates[]" value="Auction" />Auction 
+    			</label>
+    			<label class="checkbox-inline">
+    				<input id="classified" type="checkbox" class="checkbox" name="buyformates[]" value="Classified"  />Classified Ads
+    			</label>
+    			</div>
+    		</div>
+    		<div class="form-group">
+    			<label for="ReturnsAcceptedOnly" class="col-sm-2 control-label">Seller:</label>
+    			<div class="col-sm-10">
+    			<label class="checkbox-inline">
+    				<input id="raccepted" type="checkbox" class="checkbox" name="ReturnsAcceptedOnly" value="true" />Return accepted
+    			</label>
+    			</div>
+    		</div>
+    		<div class="form-group">
+    			<label for="shipping" class="col-sm-2 control-label">Shipping:</label>
+    			<div class="col-sm-10">
+    			<label class="checkbox-inline">
+    				<input id="freeship" type="checkbox" class="checkbox" name="freeship" value="freeship" />Free Shipping 
+    			</label>
+    			<label class="checkbox-inline">
+    				<input id="expeditedship" type="checkbox" class="checkbox" name="expeditedship" value="expeditedship" />Expedited shipping<br>
+    			</label>
+    			</div>
+    			<div class="col-sm-offset-2 col-sm-10 needcheck" id="maxHandlingTimeRow">
+    				<input class="form-control" id="MaxHandlingTime" name="MaxHandlingTime" placeholder="Max handling time(days)" value=""/>
+    			</div>
+    		</div>
+    		<div class="form-group">
+    			<label for="sort" class="col-sm-2 control-label">Sort by:</label>
+    			<div class="col-sm-10">
+    			<select id="sortOrder" name="sort" class="form-control">
+    				<option value="BestMatch">Best Match</option>
+    				<option value="CurrentPriceHighest">Price: highest first</option>
+    				<option value="PricePlusShippingHighest">Price + Shipping: highest first</option>
+    				<option value="PricePlusShippingLowest">Price + Shipping: lowest first</option>
+    			</select>
+    			</div>
+    		</div>
+    		<div class="form-group">
+    			<label for="perPage" class="col-sm-2 control-label">Results Per Page:</label>
+    			<div class="col-sm-10">
+    			<select id="perPage" name="perPage" class="form-control">
+    				<option value="5">5</option>
+    				<option value="10">10</option>
+    			</select>
+    			</div>
+    		</div>
+    		<div class="form-group">
+    			<div class="col-sm-offset-10 col-sm-5">
+    				<input id="clear" class="btn btn-default" type="button" name="clear" value="Clear" onclick="Wipe()"> <input id="submit" class="btn btn-primary" type="submit" name="submit" value="Search">
+    			</div>
+    		</div>
+    	</form>
+    	<div id='results'></div>
+    	<nav id="pagination">
+  			<ul class="pagination">
+    			<li class="page disabled">
+     		 		<a id="prev" aria-label="Previous">
+        				<span aria-hidden="true">&laquo;</span>
+      				</a>
+    			</li>
+   				<li class="page active"><a id="1">1</a></li>
+   				<li class="page"><a id="2">2</a></li>
+   				<li class="page"><a id="3">3</a></li>
+    			<li class="page"><a id="4">4</a></li>
+    			<li class="page"><a id="5">5</a></li>
+    			<li class="page">
+      				<a id="next" aria-label="Next">
+        				<span aria-hidden="true">&raquo;</span>
+      				</a>
+    			</li>
+  			</ul>
+		</nav>
+    	<script type="text/javascript">
+    		function Wipe(){
+				document.getElementById("keywords").value = "";
+				document.getElementById("pricefrom").value = "";
+				document.getElementById("priceto").value = "";
+				document.getElementById("new").checked = false;
+				document.getElementById("used").checked = false;
+				document.getElementById("verygood").checked = false;
+				document.getElementById("good").checked = false;
+				document.getElementById("acceptable").checked = false;
+				document.getElementById("fixedprice").checked = false;
+				document.getElementById("auction").checked = false;
+				document.getElementById("classified").checked = false;
+				document.getElementById("raccepted").checked = false;
+				document.getElementById("freeship").checked = false;
+				document.getElementById("expeditedship").checked = false;
+				document.getElementById("MaxHandlingTime").value = "";
+				document.getElementById("sortOrder").value = "BestMatch";
+				document.getElementById("perPage").value = "5";
+				document.getElementById("results").style.display = 'none';
+    		}
+    	</script>	
+    <script>
+    	var facebookinfo = [];
+    	$.validator.setDefaults({
+			debug: true,
+			success: "valid"
+    	});
+    	$(document).ready(function() {
+    		var curPage = 1;
+    		var prevPage = 1;
+    		$("#pagination").hide();      
+    		
+    		function reset() {
+    			curPage = 1;
+    			prevPage = 1;
+    			$("#1").closest('.page').addClass('active');
+    			$("#2").closest('.page').removeClass('active');
+    			$("#3").closest('.page').removeClass('active');
+    			$("#4").closest('.page').removeClass('active');
+    			$("#5").closest('.page').removeClass('active');
+    			$("#prev").closest('.page').addClass('disabled');
+    			$("#1").html(1);
+    			$("#2").html(2);
+    			$("#3").html(3);
+    			$("#4").html(4);
+    			$("#5").html(5);
+    		}
+    		$("#clear").click(function(){
+    			$("#pagination").hide();         
+				reset();
+    		})
+    		function makeCall(data){
+    			alert(data);
+    			$.ajax({
+    				type: "GET",
+    				url:'hw8_parse.php',
+    				data: data,
+    				dataType:'json',
+    				success: function(response){
+    					if(response.ack != "Success") {
+    						$("#pagination").hide(); 
+    						$("#results").html("<h3 style='padding-bottom: 20px'>"+ response.ack +"</h3>");
+    					} else {
+    						var resultCount = parseInt(response.resultCount);
+    						var page = parseInt(response.pageNumber);
+    						var itemCount = parseInt(response.itemCount);
+    						$("#pagination").show();
+    						if(resultCount <= itemCount) {
+    							$("#pagination").hide(); 
+    						}
+    						var itemNum = 0;
+    						for( property in response) {
+    							if(response.hasOwnProperty(property)) {
+    								itemNum++;
+    							}
+    						}
+    						itemNum = itemNum - 4;
+    						var startitem = (page - 1) * itemCount + 1;
+    						var enditem = startitem + itemNum - 1;
+    						var itemRange = startitem + "-" + enditem;
+    						var result = "<h3 id='resultHeader'>" + itemRange + " items out of " + response.resultCount + "</h3>";
+    						var index = 0;
+    						$.each(response, function(item, itemvalue){
+    							if(item.substring(0, 4) == "item" && item.length == 5) {
+         							var imgURL = this.basicInfo.gallerURL;
+         							var superimg = this.basicInfo.pictureURLSuperSize == "" ? imgURL : this.basicInfo.pictureURLSuperSize;
+        							var title = this.basicInfo.title;
+        							//alert(title);
+         							var titleURL = this.basicInfo.viewItemURL;
+        							var price = this.basicInfo.convertedCurrentPrice;
+        							var shippingPrice = (this.basicInfo.shippingServiceCost == "0.0" || this.basicInfo.shippingServiceCost == "") ? "FREE Shipping" : "+ $"+ this.basicInfo.shippingServiceCost+" for shipping";
+        							var location = this.basicInfo.location == "" ? "N/A": this.basicInfo.location;
+        							facebookinfo[index] = [imgURL, title, titleURL, price, shippingPrice, location];
+        							var topRated = (this.basicInfo.topRatedListing == "true");
+        							var category = this.basicInfo.categoryName == ""? "N/A": this.basicInfo.categoryName;
+        							var condition = this.basicInfo.conditionDisplayName == ""? "N/A": this.basicInfo.conditionDisplayName;
+        							var buyingFormat = this.basicInfo.listingType == ""? "N/A": this.basicInfo.listingType;
+        							buyingFormat = buyingFormat.replace(/([a-z])([A-Z])/g, '$1 $2');
+        							var userName = this.sellerInfo.sellerUserName == ""? "N/A": this.sellerInfo.sellerUserName;
+        							var feedbackScore = this.sellerInfo.feedbackScore == ""? "N/A": this.sellerInfo.feedbackScore;
+        							var positiveFeedback = this.sellerInfo.positiveFeedbackPercent == ""? "N/A": this.sellerInfo.positiveFeedbackPercent;
+        							var feedbackRating = this.sellerInfo.feedbackRatingStar == ""? "N/A": this.sellerInfo.feedbackRatingStar;
+        							feedbackRating = feedbackRating.replace(/([a-z])([A-Z])/g, '$1 $2');
+        							var topRated = (this.sellerInfo.topRatedSeller == "true");
+        							var store = this.sellerInfo.sellerStoreName;
+        							var storeURL = this.sellerInfo.sellerStoreURL; 
+        							var shippingType = this.shippingInfo.shippingType;
+        							shippingType = shippingType.replace(/([a-z])([A-Z])/g, '$1 $2');
+        							var handlingTime = this.shippingInfo.handlingTime == ""? "N/A": this.shippingInfo.handlingTime + " day(s)";
+        							var shippingLocation = this.shippingInfo.shipToLocations == ""? "N/A": this.shippingInfo.shipToLocations;
+        							var expedited = this.shippingInfo.expeditedShipping == "true";
+        							var oneDay = this.shippingInfo.oneDayShippingAvailable == "true";
+        							var returns = this.shippingInfo.returnsAccepted == "true";
+        							result += "<div class='media'><a class='pull-left' data-toggle='modal' href='#imgModal"+ index +"' >";
+        							result += "<img class='media-object img-responsive' width='65px' height='65px' src='"+ imgURL +"'></a>";
+        							result += "<div class='media-body'>";
+        							result += "<a class='media-heading' href='"+ titleURL + "' target='_blank'><h4>" + title + "</h4></a>";
+        							result += "<p><b>Price: $" + price + " (" + shippingPrice + ")</b>&nbsp;&nbsp;&nbsp;<i>Location: "+ location + "</i>&nbsp;&nbsp;&nbsp;";
+        							if(topRated) {
+        								result += "<img width='27px' height='30px' src='itemTopRated.jpg' align='middle'>&nbsp;&nbsp;&nbsp;";
+        							}
+        							result += "<a data-toggle='collapse' href='#item"+ index +"'>View Details</a>&nbsp;&nbsp;<img onclick=\"facebookShare.apply(null, facebookinfo["+index+"])\" width='23px' height='23px' src='http://cs-server.usc.edu:45678/hw/hw8/fb.png' align='middle'>";
+        							
+        							result += "</p><div id='item"+ index +"' class='collapse'>";
+        							result += "<ul id='myTab' class='nav nav-tabs'>";
+        							result += "<li class='active'><a href='#basic"+ index +"' data-toggle='tab' aria-controls='basic'>Basic Info</a></li>";
+        							result += "<li><a href='#seller"+ index +"' data-toggle='tab' aria-controls='seller'>Seller Info</a></li>";
+        							result += "<li><a href='#shipping"+ index +"' data-toggle='tab' aria-controls='shipping'>Shipping Info</a></li></ul>";
+        							result += "<div id='myTabContent' class='tab-content'>";
+        							result += "<div class='tab-pane fade in active' id='basic"+ index +"'>";
+        							result += "<div class='onerow'><div class='col-sm-3 col-md-3'><b>Category name</b></div><div class='col-sm-7 col-md-7'>"+ category +"</div></div><div class='onerow'><div class='col-sm-3 col-md-3'><b>Condition</b></div><div class='col-sm-7 col-md-7'>"+ condition +"</div></div><div class='onerow'><div class='col-sm-3 col-md-3'><b>Buying format</b></div><div class='col-sm-7 col-md-7'>"+ buyingFormat +"</div></div></div>";
+        							result += "<div class='tab-pane fade' id='seller"+ index +"'>";
+        							result += "<div class='onerow'><div class='col-sm-3 col-md-3'><b>User name</b></div><div class='col-sm-7 col-md-7'>"+ userName +"</div></div><div class='onerow'><div class='col-sm-3 col-md-3'><b>Feedback score</b></div><div class='col-sm-7 col-md-7'>"+ feedbackScore +"</div></div><div class='onerow'><div class='col-sm-3 col-md-3'><b>Positive feedback</b></div><div class='col-sm-7 col-md-7'>"+ positiveFeedback +"</div></div><div class='onerow'><div class='col-sm-3 col-md-3'><b>Feedback rating</b></div><div class='col-sm-7 col-md-7'>"+ feedbackRating +"</div></div>";
+        							result += "<div class='onerow'><div class='col-sm-3 col-md-3'><b>Top rated</b></div><div class='col-sm-7 col-md-7'>";
+        							if(topRated) {
+        								result += "<span class='glyphicon glyphicon-ok' style='color:#69BD69'></span>";
+        							} else {
+        								result += "<span class='glyphicon glyphicon-remove' style='color:#A94442'></span>";
+        							}
+        							result += "</div></div><div class='onerow'><div class='col-sm-3 col-md-3'><b>Store</b></div><div class='col-sm-7 col-md-7'>";
+        							if(store == ""){
+        								result += "N/A";
+        							} else {
+        								result += "<a href='" + storeURL + "' target='_blank'>" + store + "</a>";
+        							}
+        							result += "</div></div></div>";
+        							result += "<div class='tab-pane fade' id='shipping"+ index +"'>";
+        							result += "<div class='onerow'><div class='col-sm-3 col-md-3'><b>Shipping type</b></div><div class='col-sm-7 col-md-7'>"+ shippingType +"</div></div><div class='onerow'><div class='col-sm-3 col-md-3'><b>Handling time</b></div><div class='col-sm-7 col-md-7'>"+ handlingTime +"</div></div><div class='onerow'><div class='col-sm-3 col-md-3'><b>Shipping locations</b></div><div class='col-sm-7 col-md-7'>"+ shippingLocation +"</div></div>";
+        							result += "<div class='onerow'><div class='col-sm-3 col-md-3'><b>Expedited shipping</b></div><div class='col-sm-7 col-md-7'>";
+            						if(expedited) {
+            							result += "<span class='glyphicon glyphicon-ok' style='color:#69BD69'></span>";
+            						} else {
+            							result += "<span class='glyphicon glyphicon-remove' style='color:#A94442'></span>";
+            						}
+        							result += "</div></div><div class='onerow'><div class='col-sm-3 col-md-3'><b>One day shipping</b></div><div class='col-sm-7 col-md-7'>";
+            						if(oneDay) {
+            							result += "<span class='glyphicon glyphicon-ok' style='color:#69BD69'></span>";
+            						} else {
+            							result += "<span class='glyphicon glyphicon-remove' style='color:#A94442'></span>";
+            						}  
+            						result += "</div></div><div class='onerow'><div class='col-sm-3 col-md-3'><b>Returns accepted</b></div><div class='col-sm-7 col-md-7'>";
+            						if(returns) {
+            							result += "<span class='glyphicon glyphicon-ok' style='color:#69BD69'></span>";
+            						} else {
+            							result += "<span class='glyphicon glyphicon-remove' style='color:#A94442'></span>";
+            						}
+        							result += "</div></div></div></div></div></div>";
+        							result += "<div class='modal fade' id='imgModal"+ index +"' tabindex='-1' role='dialog' aria-labelledby='myModalLabel"+ index +"' aria-hidden='true'><div class='modal-dialog'><div class='modal-content'><div class='modal-header'><button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button><h4 class='modal-title' id='myModalLabel"+ index +"'>" + title + "<h4></div><div class='modal-body'><img class='img-responsive' style='margin: 0 auto' src='"+ superimg +"'></div></div></div></div></div>";
+    								index++;
+    							}
+    						});   							
+    						$("#results").html(result);
+    						
+    					}
+    				}
+    			});
+    		}
+    		var input;
+    		$("#submit").click(function(){
+    			if($("#myform").valid() == true){
+    				reset();
+    				input = $("#myform").serialize();
+                    alert(input);
+    				makeCall(input+"&curPageNum=1");
+    			}
+    		})
+    		function controlActive(curIndex, prevIndex, currentP) {
+    			makeCall(input+"&curPageNum="+currentP);
+				if(currentP == 1) {
+					$("#prev").closest('.page').addClass('disabled');
+				} else {
+					$("#prev").closest('.page').removeClass('disabled');
+				}
+				$("#"+prevIndex).closest('.page').removeClass('active');
+				$("#"+curIndex).closest('.page').addClass('active');
+    		}
+			$("#1").click(function(){
+				prevPage = curPage;
+				curPage = $("#1").html();
+				controlActive(1, prevPage % 5 == 0? 5: prevPage % 5, curPage);
+			})
+			$("#2").click(function(){
+				prevPage = curPage;
+				curPage = $("#2").html();
+				controlActive(2, prevPage % 5 == 0? 5: prevPage % 5, curPage);
+			})
+			$("#3").click(function(){
+				prevPage = curPage;
+				curPage = $("#3").html();
+				controlActive(3, prevPage % 5 == 0? 5: prevPage % 5, curPage);
+			})			
+			$("#4").click(function(){
+				prevPage = curPage;
+				curPage = $("#4").html();
+				controlActive(4, prevPage % 5 == 0? 5: prevPage % 5, curPage);
+			})
+			$("#5").click(function(){
+				prevPage = curPage;
+				curPage = $("#5").html();
+				controlActive(5, prevPage % 5 == 0? 5: prevPage % 5, curPage);
+			})
+			$("#prev").click(function(){
+				if(curPage == 1){
+					return false;
+				}
+				prevPage = curPage--;
+				if(prevPage != 1 && prevPage % 5 == 1) {
+					$("#5").html(curPage);
+					$("#4").html(curPage - 1);
+					$("#3").html(curPage - 2);
+					$("#2").html(curPage - 3);
+					$("#1").html(curPage - 4);
+					controlActive(5, 1, curPage);
+				} else {
+					prevPage % 5 == 0? controlActive(4, 5, curPage): controlActive(curPage % 5, prevPage % 5, curPage);
+				}
+			})
+			$("#next").click(function(){
+				//alert(curPage);
+				$("#prev").closest('.page').removeClass('disabled');
+				prevPage = curPage;
+				if(curPage % 5 == 0) {
+					$("#1").html(++curPage);
+					$("#2").html(curPage + 1);
+					$("#3").html(curPage + 2);
+					$("#4").html(curPage + 3);
+					$("#5").html(curPage  +4);
+					controlActive(1, 5, curPage);
+				} else {
+					curPage++;
+					curPage % 5 == 0? controlActive(5, 4, curPage): controlActive(curPage % 5, prevPage % 5, curPage);
+				}
+			})
+			
+        	$("#myform").validate({
+        		highlight: function(element) {
+                    $(element).closest('.needcheck').addClass('has-error');
+                },
+                unhighlight: function(element) {
+                    $(element).closest('.needcheck').removeClass('has-error');
+                },
+                errorElement: 'span',
+                errorClass: 'errorMsg',
+				rules:{
+					keywords: {
+						required: true 
+					},
+					pricefrom: {
+						number: true,
+						min: 0
+					},
+					priceto: {
+						number: true,
+						min: 0,
+						morethan: "#pricefrom"
+					},
+            		MaxHandlingTime: {
+            			digits: true,
+            			min: 1
+            		}
+				},
+				messages:{
+					keywords: {
+						required: "Please enter a key word",
+					},
+					pricefrom: {
+						number: "Price should be a valid number",
+						min: "Minimum price cannot be below 0",
+					},
+					priceto: {
+						number: "Price should be a valid number",
+						min: "Maximum price cannot be less than minimum price or below 0",
+						morethan: "Maximum price cannot be less than minimum price or below 0"
+					},
+					MaxHandlingTime: {
+						digits: "Max handling time should be a valid digit",
+						min: "Max handling time should be greater than or equal to 1"
+					}
+				}
+        	});
+    	});
+    	jQuery.validator.addMethod("morethan", function(value, element, param) {
+    		if($(param).val() == ""){
+    			return this.optional(element) || parseFloat(value) >= 0;
+    		}
+    	  return this.optional(element) || parseFloat(value) >= parseFloat($(param).val());
+    	});
+    	function facebookShare(imgURL, title, titleURL, price, shippingPrice, location){
+    		FB.ui({
+    			method: 'feed',
+    			link: titleURL,
+    			caption: 'Search Information from eBay.com',
+    			picture: imgURL,
+    			name: title,
+    			description: "Price: $" + price + " (" + shippingPrice + "), Location: "+ location + "",
+    		}, function(response){
+    			if(response){
+    				alert("Posted Successfully");
+    			} else {
+    				alert("Not Posted");
+    			}
+    		});
+    	}
+    </script>
+    <noscript>
+    </body>
+</html>
