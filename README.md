@@ -1,4 +1,3 @@
-# Academic Project
-# ebaySearch Responsive Webpage
-# Edit by Hao Zhang
-
+# Project
+# ebaySearch Web Project
+# Edit by Brian Zhang
